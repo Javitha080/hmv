@@ -120,6 +120,11 @@
     position: relative;
     z-index: 2;
   }
+  @media (max-width: 768px) { /* Adjust 768px to your desired mobile breakpoint */
+  .absolute.bottom-10.left-1\/2.transform.-translate-x-1\/2.max-w-md.w-full.mx-4.group {
+    display: none;
+  }
+}
 
   /* Cinematic lighting effects */
   .ambient-lights {

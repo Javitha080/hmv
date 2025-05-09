@@ -237,11 +237,27 @@ function toggleDarkMode() {
 /**
  * Update dark mode icons and related UI elements
  */
-function updateDarkModeIcons(isDarkMode) {
-  const darkModeIcon = document.getElementById('darkModeIcon');
-  const mobileDarkModeIcon = document.getElementById('mobileDarkModeIcon');
-  const darkModeToggles = document.querySelectorAll('#darkModeToggle, #mobileDarkModeToggle');
-  
+
+
+const button = $0.parentElement;
+const htmlElement = document.documentElement;
+
+// Store the original click handler if it exists (this is a simplified approach)
+const originalOnClick = button.onclick;
+
+// Add a new click event listener
+button.onclick = function() {
+  htmlElement.classList.toggle('dark');
+  // If there was an original click handler, call it after ours
+  if (originalOnClick) {
+    originalOnClick.apply(this, arguments);
+  }
+};
+
+const data = {
+  message: "Temporarily attached a click handler to the button to toggle the 'dark' class on the <html> element."
+};
+
   // Update main icon
   if (darkModeIcon) {
     if (isDarkMode) {
@@ -278,7 +294,7 @@ function updateDarkModeIcons(isDarkMode) {
       toggle.classList.remove('bg-yellow-400/20');
     }
   });
-}
+
 
 /**
  * Initialize mobile menu with simplified functionality

@@ -294,7 +294,7 @@ const data = {
       toggle.classList.remove('bg-yellow-400/20');
     }
   });
-}
+
 
 /**
  * Initialize mobile menu with simplified functionality

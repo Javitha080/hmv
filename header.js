@@ -139,6 +139,9 @@ function initHeader() {
     });
   });
   
+  // Initialize dropdown menus
+  initDropdownMenus();
+  
   // Add aria-labels for accessibility
   if (darkModeToggle) {
     darkModeToggle.setAttribute('aria-label', isDarkModeEnabled ? 'Switch to Light Mode' : 'Switch to Dark Mode');
@@ -237,27 +240,11 @@ function toggleDarkMode() {
 /**
  * Update dark mode icons and related UI elements
  */
-
-
-const button = $0.parentElement;
-const htmlElement = document.documentElement;
-
-// Store the original click handler if it exists (this is a simplified approach)
-const originalOnClick = button.onclick;
-
-// Add a new click event listener
-button.onclick = function() {
-  htmlElement.classList.toggle('dark');
-  // If there was an original click handler, call it after ours
-  if (originalOnClick) {
-    originalOnClick.apply(this, arguments);
-  }
-};
-
-const data = {
-  message: "Temporarily attached a click handler to the button to toggle the 'dark' class on the <html> element."
-};
-
+function updateDarkModeIcons(isDarkMode) {
+  const darkModeIcon = document.getElementById('darkModeIcon');
+  const mobileDarkModeIcon = document.getElementById('mobileDarkModeIcon');
+  const darkModeToggles = document.querySelectorAll('#darkModeToggle, #mobileDarkModeToggle');
+  
   // Update main icon
   if (darkModeIcon) {
     if (isDarkMode) {
@@ -294,63 +281,140 @@ const data = {
       toggle.classList.remove('bg-yellow-400/20');
     }
   });
-
+}
 
 /**
- * Initialize mobile menu with simplified functionality
+ * Initialize mobile menu animations
  */
 function initMobileMenu() {
-  const mobileMenuButton = document.getElementById('mobileMenuButton');
-  const mobileMenu = document.getElementById('mobileMenu');
+  console.log('Initializing mobile menu animations');
   
-  if (!mobileMenuButton || !mobileMenu) {
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileMenuButton = document.getElementById('mobileMenuButton');
+  
+  if (!mobileMenu || !mobileMenuButton) {
     console.error('Mobile menu elements not found');
     return;
   }
   
-  // Force initial state - simple hidden state without animations
-  mobileMenu.classList.add('hidden');
+  console.log('Mobile menu elements found');
   
-  // Simple toggle for mobile menu
-  mobileMenuButton.onclick = function(event) {
-    event.stopPropagation(); // Prevent document click from immediately closing the menu
-    
-    if (mobileMenu.classList.contains('hidden')) {
-      // Show menu without animation
-      mobileMenu.classList.remove('hidden');
+  // Add GSAP animations for mobile menu
+  gsap.set(mobileMenu, { x: '100%' });
+  
+  // Add click event to mobile menu button
+  mobileMenuButton.addEventListener('click', function() {
+    if (mobileMenu.classList.contains('active')) {
+      // Close menu
+      gsap.to(mobileMenu, {
+        x: '100%',
+        duration: 0.5,
+        ease: 'power2.inOut',
+        onComplete: () => {
+          mobileMenu.classList.remove('active');
+        }
+      });
+      
+      // Update icon
+      const icon = this.querySelector('i');
+      if (icon) {
+        icon.classList.remove('ri-close-line');
+        icon.classList.add('ri-menu-line');
+      }
     } else {
-      // Hide menu without animation
-      mobileMenu.classList.add('hidden');
-    }
-  };
-  
-  // Close mobile menu when clicking outside
-  document.addEventListener('click', function(event) {
-    if (!mobileMenu.classList.contains('hidden') && 
-        !mobileMenu.contains(event.target) && 
-        !mobileMenuButton.contains(event.target)) {
-      // Hide menu without animation
-      mobileMenu.classList.add('hidden');
+      // Open menu
+      mobileMenu.classList.add('active');
+      gsap.to(mobileMenu, {
+        x: '0%',
+        duration: 0.5,
+        ease: 'power2.inOut'
+      });
+      
+      // Update icon
+      const icon = this.querySelector('i');
+      if (icon) {
+        icon.classList.remove('ri-menu-line');
+        icon.classList.add('ri-close-line');
+      }
     }
   });
   
-  // Add click event to mobile menu items
-  const mobileMenuItems = mobileMenu.querySelectorAll('a');
-  mobileMenuItems.forEach(item => {
-    item.onclick = function() {
-      // Hide menu without animation
-      mobileMenu.classList.add('hidden');
-    };
+  // Close menu when clicking on mobile nav links
+  const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+  mobileNavLinks.forEach(link => {
+    link.addEventListener('click', function() {
+      gsap.to(mobileMenu, {
+        x: '100%',
+        duration: 0.5,
+        ease: 'power2.inOut',
+        onComplete: () => {
+          mobileMenu.classList.remove('active');
+          
+          // Update icon
+          const icon = mobileMenuButton.querySelector('i');
+          if (icon) {
+            icon.classList.remove('ri-close-line');
+            icon.classList.add('ri-menu-line');
+          }
+        }
+      });
+    });
   });
   
-  // Ensure mobile dark mode toggle works
-  const mobileDarkModeToggle = document.getElementById('mobileDarkModeToggle');
-  if (mobileDarkModeToggle) {
-    mobileDarkModeToggle.onclick = function(event) {
-      event.stopPropagation(); // Prevent document click from closing the menu
-      toggleDarkMode();
-    };
-  }
+  console.log('Mobile menu animations initialized');
+}
+
+/**
+ * Initialize dropdown menus for desktop navigation
+ */
+function initDropdownMenus() {
+  console.log('Initializing dropdown menus');
+  
+  const navItems = document.querySelectorAll('.nav-item');
+  
+  navItems.forEach(item => {
+    const link = item.querySelector('.nav-link');
+    const dropdown = item.querySelector('.dropdown-menu');
+    
+    if (!link || !dropdown) return;
+    
+    // Ensure dropdown is properly positioned
+    link.addEventListener('mouseenter', () => {
+      // Calculate if dropdown would go off-screen
+      const rect = dropdown.getBoundingClientRect();
+      const windowWidth = window.innerWidth;
+      
+      if (rect.right > windowWidth) {
+        dropdown.style.left = 'auto';
+        dropdown.style.right = '0';
+      }
+    });
+    
+    // Add animation for smoother transitions
+    item.addEventListener('mouseenter', () => {
+      gsap.to(dropdown, {
+        opacity: 1,
+        y: 0,
+        duration: 0.3,
+        ease: 'power2.out',
+        visibility: 'visible'
+      });
+    });
+    
+    item.addEventListener('mouseleave', () => {
+      gsap.to(dropdown, {
+        opacity: 0,
+        y: 10,
+        duration: 0.3,
+        ease: 'power2.in',
+        onComplete: () => {
+          dropdown.style.visibility = 'hidden';
+        }
+      });
+    });
+  });
+  
+  console.log('Dropdown menus initialized');
 }
 
 /**
